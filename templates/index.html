@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Food & Waste Intelligence System | DWM PBL</title>
+    <meta name="description" content="Data Warehousing & Data Mining system analyzing food demand, sales, and food-waste patterns to optimize inventory and minimize waste.">
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- ==========================================================================
+         MAIN APPLICATION CONTAINER (GATED BY AUTHENTICATION SCREEN)
+         ========================================================================== -->
+    <div id="mainAppContainer" style="display:none;">
+
+        <!-- ==========================================================================
+             TOP NAVIGATION BAR
+             ========================================================================== -->
+        <nav class="navbar">
+            <a href="#dashboard" class="nav-brand" onclick="navigateTo('dashboard'); return false;">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Smart Food & Waste Intelligence</h1>
+                    <span>Data Warehousing & Data Mining PBL</span>
+                </div>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#dashboard" class="nav-item active" data-route="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="#data-management" class="nav-item" data-route="data-management"><i class="fa-solid fa-server"></i> Data Management</a></li>
+                <li><a href="#mining" class="nav-item" data-route="mining"><i class="fa-solid fa-brain"></i> Data Mining</a></li>
+                <li><a href="#predictions" class="nav-item" data-route="predictions"><i class="fa-solid fa-wand-magic-sparkles"></i> Predictions & Insights</a></li>
+                <li>
+                    <a href="#dwm-analysis" class="nav-item" data-route="dwm-analysis" style="color: #a5b4fc; font-weight: 600;">
+                        <i class="fa-solid fa-graduation-cap text-indigo"></i> DWM Analysis
+                        <span class="badge badge-info" style="font-size:0.65rem; padding: 0.15rem 0.4rem;">PBL</span>
+                    </a>
+                </li>
+                <li><a href="#reports" class="nav-item" data-route="reports"><i class="fa-solid fa-file-contract"></i> Reports</a></li>
+                <li><a href="#admin" class="nav-item" data-route="admin" style="display:none;"><i class="fa-solid fa-shield-halved"></i> Admin</a></li>
+            </ul>
+
+            <div class="nav-user">
+                <span id="navUserBadge" class="role-badge role-Analyst">Analyst</span>
+                <div class="user-profile">
+                    <span id="navUserName">Analyst Persona</span>
+                </div>
+                <button class="btn btn-secondary btn-icon" title="Switch User Role Persona" onclick="openAuthModal()">
+                    <i class="fa-solid fa-user-gear"></i>
+                </button>
+                <button class="btn btn-secondary btn-sm" title="Sign Out" onclick="logout()" style="margin-left:0.5rem; padding: 0.35rem 0.65rem;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+    <!-- ==========================================================================
+         MAIN CONTAINER
+         ========================================================================== -->
+    <main class="main-wrapper">
+
+        <!-- ======================================================================
+             PAGE 1: DASHBOARD
+             ====================================================================== -->
+        <section id="page-dashboard" class="page-section active">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Executive Waste & Demand Intelligence Dashboard</h2>
+                    <p>Overview of food logistics across 77 fulfillment centers & 51 menu categories from real external datasets.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="window.loadDashboard()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                    <button class="btn btn-primary" onclick="navigateTo('predictions')"><i class="fa-solid fa-wand-magic-sparkles"></i> Run Forecaster</button>
+                </div>
+            </div>
+
+            <!-- ==================================================================
+                 FEATURE: FOOD WASTE PERIODIC MONITORING & EARLY ANALYSIS
+                 ================================================================== -->
+            <div class="periodic-monitoring-section" id="periodicMonitoringSection">
+                <div class="periodic-header">
+                    <div class="periodic-title">
+                        <h3><i class="fa-solid fa-clock-rotate-left text-emerald"></i> Food Waste Periodic Monitoring & Early Analysis</h3>
+                        <p>Analyze food waste by temporal periods, compare with previous equivalent cycles, detect early surge warnings, and continuously upload new datasets.</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="btnContinuousUploadTrigger" onclick="openContinuousUploadModal()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Continuous Data Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. PERIOD SELECTOR -->
+                <div class="period-selector-toolbar">
+                    <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                        <span style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em;">
+                            <i class="fa-solid fa-filter"></i> Period:
+                        </span>
+                        <div class="period-pills-group">
+                            <button type="button" class="period-selector-pill" data-period="daily" onclick="setPeriodType('daily')">
+                                <i class="fa-solid fa-calendar-day"></i> Daily
+                            </button>
+                            <button type="button" class="period-selector-pill active" data-period="weekly" onclick="setPeriodType('weekly')">
+                                <i class="fa-solid fa-calendar-week"></i> Weekly
+                            </button>
+                            <button type="button" class="period-selector-pill" data-period="monthly" onclick="setPeriodType('monthly')">
+                                <i class="fa-solid fa-calendar"></i> Monthly
+                            </button>
+                            <button type="button" class="period-selector-pill" data-period="yearly" onclick="setPeriodType('yearly')">
+                                <i class="fa-solid fa-calendar-check"></i> Yearly
+                            </button>
+                            <button type="button" class="period-selector-pill" data-period="custom" onclick="setPeriodType('custom')">
+                                <i class="fa-solid fa-sliders"></i> Custom Date Range
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="period-value-controls">
+                        <!-- Weekly Dropdown (Default) -->
+                        <div id="periodSelectWeekWrapper">
+                            <select id="selectPeriodWeek" class="period-select-input">
+                                <option value="26">Week 26 (Current)</option>
+                            </select>
+                        </div>
+
+                        <!-- Monthly Dropdown -->
+                        <div id="periodSelectMonthWrapper" style="display:none;">
+                            <select id="selectPeriodMonth" class="period-select-input">
+                                <option value="June">June</option>
+                            </select>
+                        </div>
+
+                        <!-- Yearly Dropdown -->
+                        <div id="periodSelectYearWrapper" style="display:none;">
+                            <select id="selectPeriodYear" class="period-select-input">
+                                <option value="2024">Year 2024</option>
+                            </select>
+                        </div>
+
+                        <!-- Daily Dropdown -->
+                        <div id="periodSelectDateWrapper" style="display:none;">
+                            <select id="selectPeriodDate" class="period-select-input">
+                                <option value="2024-06-24">2024-06-24</option>
+                            </select>
+                        </div>
+
+                        <!-- Custom Date Range -->
+                        <div id="periodSelectCustomWrapper" style="display:none; align-items:center; gap:0.5rem;">
+                            <input type="date" id="inputPeriodStartDate" class="period-select-input" style="min-width:130px;">
+                            <span style="color:var(--text-muted); font-size:0.8rem;">to</span>
+                            <input type="date" id="inputPeriodEndDate" class="period-select-input" style="min-width:130px;">
+                        </div>
+
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="runPeriodicAnalysis()" title="Recalculate period analysis">
+                            <i class="fa-solid fa-arrows-rotate"></i> Analyze
+                        </button>
+                    </div>
+                </div>
+
+                <div id="periodicMonitoringContent">
+                    <!-- 4. EARLY WARNING CONTAINER -->
+                    <div class="early-warning-container status-emerald" id="earlyWarningBox">
+                        <div class="early-warning-text">
+                            <span class="early-warning-badge badge-emerald" id="earlyWarningBadge">🟢 Normal</span>
+                            <div class="early-warning-message-box">
+                                <h4 id="earlyWarningMessage">Analyzing periodic food waste variance...</h4>
+                                <p id="earlyWarningDetails">Automated early warning engine evaluating food waste spike indicators against previous equivalent baseline.</p>
+                            </div>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); text-align:right;">
+                            <span id="compCurrentPeriodLabel">Current Period</span> vs <span id="compPreviousPeriodLabel">Previous Period</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. PERIOD COMPARISON EXAMPLE HIGHLIGHT -->
+                    <div class="period-example-banner" id="periodExampleBanner">
+                        <div class="example-metric-item">
+                            <div class="example-metric-label" id="exampleCurrentTitle">Current Week Waste</div>
+                            <div class="example-metric-val" id="exampleCurrentWaste" style="color:var(--accent-rose);">--</div>
+                        </div>
+                        <div style="font-size:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-arrows-left-right"></i></div>
+                        <div class="example-metric-item">
+                            <div class="example-metric-label" id="examplePreviousTitle">Previous Week Waste</div>
+                            <div class="example-metric-val" id="examplePreviousWaste" style="color:var(--text-secondary);">--</div>
+                        </div>
+                        <div style="font-size:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-equals"></i></div>
+                        <div class="example-metric-item">
+                            <div class="example-metric-label">Change</div>
+                            <div class="metric-delta-tag tag-neutral" id="exampleWasteChange">--%</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. DETAILED PERIOD COMPARISON GRID -->
+                    <div class="comparison-cards-grid">
+                        <!-- Card 1: Food Prepared -->
+                        <div class="comparison-card">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-title"><i class="fa-solid fa-utensils text-blue"></i> Food Prepared</span>
+                                <span class="comparison-delta delta-neutral" id="compFoodPreparedChange">--%</span>
+                            </div>
+                            <div class="comparison-values-row">
+                                <span class="comparison-current-val" id="compFoodPreparedCurrent">--</span>
+                                <span class="comparison-prev-val">Prev: <strong id="compFoodPreparedPrevious" style="color:var(--text-secondary);">--</strong></span>
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Kitchen production volume</div>
+                        </div>
+
+                        <!-- Card 2: Food Sold -->
+                        <div class="comparison-card">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-title"><i class="fa-solid fa-bag-shopping text-emerald"></i> Food Sold</span>
+                                <span class="comparison-delta delta-neutral" id="compFoodSoldChange">--%</span>
+                            </div>
+                            <div class="comparison-values-row">
+                                <span class="comparison-current-val" id="compFoodSoldCurrent" style="color:var(--primary-light);">--</span>
+                                <span class="comparison-prev-val">Prev: <strong id="compFoodSoldPrevious" style="color:var(--text-secondary);">--</strong></span>
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Fulfilled customer demand</div>
+                        </div>
+
+                        <!-- Card 3: Food Wasted -->
+                        <div class="comparison-card">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-title"><i class="fa-solid fa-trash-can text-rose"></i> Food Wasted</span>
+                                <span class="comparison-delta delta-neutral" id="compFoodWastedChange">--%</span>
+                            </div>
+                            <div class="comparison-values-row">
+                                <span class="comparison-current-val" id="compFoodWastedCurrent" style="color:var(--accent-rose);">--</span>
+                                <span class="comparison-prev-val">Prev: <strong id="compFoodWastedPrevious" style="color:var(--text-secondary);">--</strong></span>
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Unconsumed & spoiled food units</div>
+                        </div>
+
+                        <!-- Card 4: Waste Percentage -->
+                        <div class="comparison-card">
+                            <div class="comparison-card-header">
+                                <span class="comparison-card-title"><i class="fa-solid fa-percent text-amber"></i> Waste Percentage</span>
+                                <span id="compWastePctDiff" style="font-size:0.75rem; font-weight:700;">--</span>
+                            </div>
+                            <div class="comparison-values-row">
+                                <span class="comparison-current-val" id="compCurrentWastePct" style="color:var(--accent-amber);">--%</span>
+                                <span class="comparison-prev-val">Prev: <strong id="compPreviousWastePct" style="color:var(--text-secondary);">--%</strong></span>
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Ratio of wasted to prepared food</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Primary KPIs -->
+            <div class="grid-4" style="margin-bottom: 1.25rem;">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Food Prepared</span>
+                        <div class="kpi-icon icon-blue"><i class="fa-solid fa-utensils"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiTotalPrepared">--</div>
+                    <div class="kpi-subtitle">Total units stocked in kitchens</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Food Sold</span>
+                        <div class="kpi-icon icon-emerald"><i class="fa-solid fa-bag-shopping"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiTotalSold" style="color:var(--primary-light);">--</div>
+                    <div class="kpi-subtitle">Actual verified customer orders</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Food Wasted</span>
+                        <div class="kpi-icon icon-rose"><i class="fa-solid fa-trash-can"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiTotalWasted" style="color:var(--accent-rose);">--</div>
+                    <div class="kpi-subtitle">Unconsumed & spoiled food units</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Waste Percentage</span>
+                        <div class="kpi-icon icon-amber"><i class="fa-solid fa-percent"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiWastePercentage" style="color:var(--accent-amber);">--%</div>
+                    <div class="kpi-subtitle">Global food loss ratio</div>
+                </div>
+            </div>
+
+            <!-- Secondary Metrics -->
+            <div class="grid-4" style="margin-bottom: 1.5rem;">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Monetary Spoilage</span>
+                        <div class="kpi-icon icon-rose"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiWasteCost" style="font-size:1.4rem;">--</div>
+                    <div class="kpi-subtitle">Direct financial inventory loss</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Gross Revenue</span>
+                        <div class="kpi-icon icon-emerald"><i class="fa-solid fa-chart-line"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiTotalRevenue" style="font-size:1.4rem;">--</div>
+                    <div class="kpi-subtitle">Sales from delivered meals</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Fulfillment Hubs</span>
+                        <div class="kpi-icon icon-purple"><i class="fa-solid fa-warehouse"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiActiveCenters" style="font-size:1.4rem;">--</div>
+                    <div class="kpi-subtitle">Commercial kitchen locations</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Menu Recipes</span>
+                        <div class="kpi-icon icon-blue"><i class="fa-solid fa-bowl-food"></i></div>
+                    </div>
+                    <div class="kpi-value" id="kpiMenuItems" style="font-size:1.4rem;">--</div>
+                    <div class="kpi-subtitle">Monitored dish categories</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-column text-blue"></i> Monthly Demand vs Food Waste Trend</h3>
+                        <span class="badge badge-info">26-Week Cycle</span>
+                    </div>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="chartMonthlyDemandWaste"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-ranking-star text-rose"></i> Top Wasted Food Items (by Volume)</h3>
+                        <span class="badge badge-danger">High Spoilage</span>
+                    </div>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="chartTopWasted"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-pie-chart text-emerald"></i> Food Waste Distribution by Cuisine</h3>
+                    </div>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="chartCuisineWaste"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-building text-amber"></i> Average Waste % by Center Facility Type</h3>
+                    </div>
+                    <div style="height: 240px; position: relative;">
+                        <canvas id="chartCenterPerformance"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 2: DATA MANAGEMENT & SOURCES
+             ====================================================================== -->
+        <section id="page-data-management" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Dataset Management & Warehouse ETL Pipeline</h2>
+                    <p>Upload new datasets, inspect provenance metadata, and manage warehouse data pipelines.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="btnOpenUploadDatasetModal" onclick="openUploadDatasetModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload / Add Dataset</button>
+                    <button class="btn btn-secondary" id="btnRunETL"><i class="fa-solid fa-rotate"></i> Re-Run ETL Pipeline</button>
+                </div>
+            </div>
+
+            <!-- System Dataset Catalog Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-folder-open text-blue"></i> System Dataset Catalog (Uploaded & Sourced Datasets)</h3>
+                    <span class="badge badge-info">Source Repository vs Processed Star Schema</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Dataset Name</th>
+                                <th>Type</th>
+                                <th>Original Provider / Source</th>
+                                <th>Record Count</th>
+                                <th>Columns</th>
+                                <th>Import Date</th>
+                                <th>Status</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="datasetCatalogTableBody">
+                            <tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading dataset catalog...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Sources Cards -->
+            <div class="grid-3" id="dataSourcesContainer" style="margin-bottom: 1.5rem;"></div>
+
+            <!-- ETL Audit Status Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-database text-emerald"></i> Warehouse Health & ETL Audit Log</h3>
+                    <div>
+                        <span class="badge badge-success" id="etlStatusBadge">ONLINE</span>
+                        <span style="font-size:0.8rem; color:var(--text-secondary); margin-left:0.5rem;">Fact Records: <strong id="etlFactRecords" style="color:var(--text-primary);">--</strong></span>
+                    </div>
+                </div>
+                <div id="etlLogContainer"></div>
+            </div>
+
+            <!-- Raw Data Preview Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-table text-blue"></i> Raw Transaction Stream Preview</h3>
+                    <div style="width: 280px;">
+                        <input type="text" id="dataSearchInput" class="form-control" placeholder="Search dish, category, center...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Kaggle ID</th>
+                                <th>Time Period</th>
+                                <th>Meal Dish Name</th>
+                                <th>Category</th>
+                                <th>Fulfillment Center</th>
+                                <th>Checkout Price</th>
+                                <th>Demand Sold</th>
+                                <th>Prepared</th>
+                                <th>Waste Units</th>
+                                <th>Waste %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rawDataTableBody"></tbody>
+                    </table>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                    <span id="dataPaginationInfo" style="font-size:0.82rem; color:var(--text-secondary);">Page 1</span>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button class="btn btn-secondary" id="btnPrevPage" disabled><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                        <button class="btn btn-secondary" id="btnNextPage">Next <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 4: DATA MINING STUDIO
+             ====================================================================== -->
+        <section id="page-mining" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Data Mining Studio (5 Core Mining Algorithms)</h2>
+                    <p>Rigorous implementations of Classification, Regression, Clustering, Association Mining, and Anomaly Detection.</p>
+                </div>
+            </div>
+
+            <div class="tabs-header">
+                <button class="tab-btn mining-tab-btn active" data-tab="paneClassification"><i class="fa-solid fa-tree"></i> 1. Classification</button>
+                <button class="tab-btn mining-tab-btn" data-tab="paneRegression"><i class="fa-solid fa-chart-line"></i> 2. Regression</button>
+                <button class="tab-btn mining-tab-btn" data-tab="paneClustering"><i class="fa-solid fa-shapes"></i> 3. K-Means Clustering</button>
+                <button class="tab-btn mining-tab-btn" data-tab="paneApriori"><i class="fa-solid fa-basket-shopping"></i> 4. Association Rules (Apriori)</button>
+                <button class="tab-btn mining-tab-btn" data-tab="paneAnomaly"><i class="fa-solid fa-triangle-exclamation"></i> 5. Anomaly Detection</button>
+            </div>
+
+            <!-- 1. Classification Pane -->
+            <div id="paneClassification" class="tab-pane mining-tab-pane active">
+                <div class="grid-4" style="margin-bottom:1.25rem;">
+                    <div class="kpi-card"><div class="kpi-title">Accuracy</div><div class="kpi-value" id="clfAccuracy" style="color:var(--primary-light);">--%</div><div class="kpi-subtitle">Test evaluation</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Precision</div><div class="kpi-value" id="clfPrecision">--%</div><div class="kpi-subtitle">Weighted average</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Recall</div><div class="kpi-value" id="clfRecall">--%</div><div class="kpi-subtitle">Class coverage</div></div>
+                    <div class="kpi-card"><div class="kpi-title">F1-Score</div><div class="kpi-value" id="clfF1" style="color:var(--accent-blue);">--%</div><div class="kpi-subtitle">Harmonic mean</div></div>
+                </div>
+
+                <div class="grid-2" style="margin-bottom:1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-table-cells text-emerald"></i> 3x3 Confusion Matrix</h3>
+                            <span class="badge badge-neutral">Actual vs Predicted Tiers</span>
+                        </div>
+                        <div id="clfConfusionMatrix"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-bar text-blue"></i> Feature Importance (Random Forest)</h3>
+                        </div>
+                        <div style="height: 220px; position: relative;">
+                            <canvas id="chartClfFeatureImportance"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Classification Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-vial text-amber"></i> Live Demand Tier Classifier (Interactive Form)</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div><label>Checkout Price ($)</label><input type="number" id="clfInputCheckout" class="form-control" value="260"></div>
+                        <div><label>Base Price ($)</label><input type="number" id="clfInputBase" class="form-control" value="310"></div>
+                        <div><label>Center Type</label><select id="clfInputCenterType" class="form-control"><option value="TYPE_A">TYPE_A</option><option value="TYPE_B">TYPE_B</option><option value="TYPE_C">TYPE_C</option></select></div>
+                        <div><label>Category</label><select id="clfInputCategory" class="form-control"><option value="Rice Bowl">Rice Bowl</option><option value="Biryani">Biryani</option><option value="Pasta">Pasta</option><option value="Pizza">Pizza</option><option value="Beverages">Beverages</option><option value="Salad">Salad</option></select></div>
+                        <div><label>Cuisine</label><select id="clfInputCuisine" class="form-control"><option value="Indian">Indian</option><option value="Italian">Italian</option><option value="Thai">Thai</option><option value="Continental">Continental</option></select></div>
+                        <div style="display:flex; align-items:center; gap:1rem; padding-top:1.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="clfInputEmail"> Email Promo</label>
+                            <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="clfInputHome"> Homepage Featured</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="runLiveClassification()" style="margin-top:1rem;"><i class="fa-solid fa-play"></i> Predict Demand Tier & Waste Risk</button>
+                    <div id="clfPredictionResult" style="display:none; margin-top:1rem; background:rgba(15,23,42,0.8); border:1px solid var(--border-light); padding:1rem; border-radius:var(--radius-md);"></div>
+                </div>
+            </div>
+
+            <!-- 2. Regression Pane -->
+            <div id="paneRegression" class="tab-pane mining-tab-pane">
+                <div class="grid-4" style="margin-bottom:1.25rem;">
+                    <div class="kpi-card"><div class="kpi-title">R² Score (Goodness of Fit)</div><div class="kpi-value" id="regR2" style="color:var(--primary-light);">--</div><div class="kpi-subtitle">Linear Baseline: <span id="regR2Linear">--</span></div></div>
+                    <div class="kpi-card"><div class="kpi-title">RMSE (Root Mean Sq Err)</div><div class="kpi-value" id="regRMSE" style="color:var(--accent-amber);">--</div><div class="kpi-subtitle">Units error</div></div>
+                    <div class="kpi-card"><div class="kpi-title">MAE (Mean Absolute Err)</div><div class="kpi-value" id="regMAE">--</div><div class="kpi-subtitle">Average deviance</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Mean Demand</div><div class="kpi-value" id="regMeanDemand" style="color:var(--accent-blue);">--</div><div class="kpi-subtitle">Average orders</div></div>
+                </div>
+
+                <div class="card" style="margin-bottom:1.5rem;">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-line text-blue"></i> Actual Demand Orders vs Random Forest Forecast</h3>
+                    </div>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="chartRegActualVsPred"></canvas>
+                    </div>
+                </div>
+
+                <!-- Live Regression Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-calculator text-emerald"></i> Live Quantitative Demand & Buffer Forecaster</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div><label>Checkout Price ($)</label><input type="number" id="regInputCheckout" class="form-control" value="220"></div>
+                        <div><label>Base Price ($)</label><input type="number" id="regInputBase" class="form-control" value="270"></div>
+                        <div><label>Center Type</label><select id="regInputCenterType" class="form-control"><option value="TYPE_A">TYPE_A</option><option value="TYPE_B">TYPE_B</option><option value="TYPE_C">TYPE_C</option></select></div>
+                        <div><label>Category</label><select id="regInputCategory" class="form-control"><option value="Rice Bowl">Rice Bowl</option><option value="Biryani">Biryani</option><option value="Pasta">Pasta</option><option value="Pizza">Pizza</option><option value="Salad">Salad</option></select></div>
+                        <div><label>Cuisine</label><select id="regInputCuisine" class="form-control"><option value="Indian">Indian</option><option value="Italian">Italian</option><option value="Thai">Thai</option><option value="Continental">Continental</option></select></div>
+                        <div style="display:flex; align-items:center; gap:1rem; padding-top:1.5rem;">
+                            <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="regInputEmail"> Email Promo</label>
+                            <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="regInputHome"> Homepage Featured</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="runLiveRegression()" style="margin-top:1rem;"><i class="fa-solid fa-calculator"></i> Calculate Optimal Prep Units</button>
+                    <div id="regPredictionResult" style="display:none; margin-top:1rem; background:rgba(15,23,42,0.8); border:1px solid var(--border-light); padding:1rem; border-radius:var(--radius-md);"></div>
+                </div>
+            </div>
+
+            <!-- 3. Clustering Pane -->
+            <div id="paneClustering" class="tab-pane mining-tab-pane">
+                <div class="grid-3" style="margin-bottom:1.25rem;">
+                    <div class="kpi-card"><div class="kpi-title">Silhouette Score</div><div class="kpi-value" id="clstSilhouette" style="color:var(--primary-light);">--</div><div class="kpi-subtitle">Inter-cluster separation</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Davies-Bouldin Index</div><div class="kpi-value" id="clstDaviesBouldin" style="color:var(--accent-blue);">--</div><div class="kpi-subtitle">Lower is better</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Total Inertia (WCSS)</div><div class="kpi-value" id="clstInertia">--</div><div class="kpi-subtitle">Within-cluster sum of squares</div></div>
+                </div>
+
+                <div class="grid-2" style="margin-bottom:1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-circle-nodes text-purple"></i> 2D PCA Cluster Projection</h3>
+                        </div>
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="chartClstScatter"></canvas>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="font-size:0.95rem; margin-bottom:0.75rem; color:var(--text-secondary);">Discovered Operational Archetypes (K=4)</h4>
+                        <div class="grid-1" id="clstArchetypeCards" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Association Rules Pane -->
+            <div id="paneApriori" class="tab-pane mining-tab-pane">
+                <div class="card" style="margin-bottom:1.25rem;">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-sliders text-blue"></i> Apriori Threshold Parameters</h3>
+                        <span class="badge badge-info" id="aprioriRulesCount">-- Rules Discovered</span>
+                    </div>
+                    <div class="grid-3">
+                        <div><label>Min Support</label><input type="number" id="aprioriMinSupport" class="form-control" step="0.01" value="0.08"></div>
+                        <div><label>Min Confidence</label><input type="number" id="aprioriMinConfidence" class="form-control" step="0.05" value="0.55"></div>
+                        <div><label>Min Lift</label><input type="number" id="aprioriMinLift" class="form-control" step="0.1" value="1.2"></div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAprioriModel()" style="margin-top:0.75rem;"><i class="fa-solid fa-arrows-rotate"></i> Re-Mine Itemsets</button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Antecedent Item</th><th>Consequent Item</th><th>Support</th><th>Confidence</th><th>Lift</th><th>Leverage</th><th>Waste Reduction Mitigation Takeaway</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aprioriRulesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Anomaly Detection Pane -->
+            <div id="paneAnomaly" class="tab-pane mining-tab-pane">
+                <div class="grid-3" style="margin-bottom:1.25rem;">
+                    <div class="kpi-card"><div class="kpi-title">Waste Anomalies Detected</div><div class="kpi-value" id="anomalyCount" style="color:var(--accent-rose);">--</div><div class="kpi-subtitle">Extreme outlier incidents</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Anomaly Contamination Rate</div><div class="kpi-value" id="anomalyRate" style="color:var(--accent-amber);">--%</div><div class="kpi-subtitle">Parameter: 2%</div></div>
+                    <div class="kpi-card"><div class="kpi-title">Decision Threshold Score</div><div class="kpi-value" id="anomalyThreshold">--</div><div class="kpi-subtitle">Isolation Forest cut-off</div></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-triangle-exclamation text-rose"></i> Top Flagged Food Waste Surges with Diagnostic Explanations</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Fact ID</th><th>Time</th><th>Dish Item</th><th>Center</th><th>Prepared</th><th>Sold</th><th>Wasted Units</th><th>Waste %</th><th>Monetary Loss</th><th>Probable Root Cause Diagnosis</th>
+                                </tr>
+                            </thead>
+                            <tbody id="anomalyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 5: PREDICTIONS & INSIGHTS
+             ====================================================================== -->
+        <section id="page-predictions" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Demand Forecaster & Actionable Smart Insights</h2>
+                    <p>What-if simulation engine paired with human-readable operational advice for kitchen management.</p>
+                </div>
+            </div>
+
+            <!-- Interactive What-If Forecaster Card -->
+            <div class="card" style="margin-bottom: 2rem; border-top: 3px solid var(--primary);">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-sliders text-emerald"></i> What-If Demand & Optimal Prep Simulator</h3>
+                    <span class="badge badge-success" id="simResultTierBadge">HIGH DEMAND TIER</span>
+                </div>
+                <div class="grid-3" style="margin-bottom: 1rem;">
+                    <div><label>Checkout Price ($)</label><input type="number" id="simCheckoutPrice" class="form-control" value="250"></div>
+                    <div><label>Base List Price ($)</label><input type="number" id="simBasePrice" class="form-control" value="300"></div>
+                    <div><label>Center Type</label><select id="simCenterType" class="form-control"><option value="TYPE_A">TYPE_A (Mega Kitchen)</option><option value="TYPE_B">TYPE_B (Urban Hub)</option><option value="TYPE_C">TYPE_C (Express Depot)</option></select></div>
+                    <div><label>Category</label><select id="simCategory" class="form-control"><option value="Rice Bowl">Rice Bowl</option><option value="Biryani">Biryani</option><option value="Pasta">Pasta</option><option value="Pizza">Pizza</option><option value="Salad">Salad</option><option value="Beverages">Beverages</option></select></div>
+                    <div><label>Cuisine</label><select id="simCuisine" class="form-control"><option value="Indian">Indian</option><option value="Italian">Italian</option><option value="Thai">Thai</option><option value="Continental">Continental</option></select></div>
+                    <div style="display:flex; align-items:center; gap:1.25rem; padding-top:1.5rem;">
+                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="simEmailPromo"> Email Promotion Active</label>
+                        <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;"><input type="checkbox" id="simHomePromo"> Homepage Featured</label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runIntegratedSimulation()"><i class="fa-solid fa-play"></i> Run Simulation & Calculate Safety Buffer</button>
+
+                <!-- Simulation Results Output Grid -->
+                <div class="grid-3" style="margin-top: 1.25rem; background: rgba(15,23,42,0.6); padding: 1rem; border-radius: var(--radius-md);">
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Forecasted Customer Orders:</span><div id="simResultDemand" style="font-size:1.3rem; font-weight:800; color:var(--accent-blue);">--</div></div>
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Recommended Prep Qty:</span><div id="simResultPrep" style="font-size:1.3rem; font-weight:800; color:var(--primary-light);">--</div></div>
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Optimal Safety Buffer:</span><div id="simResultBuffer" style="font-size:1.3rem; font-weight:800; color:var(--accent-amber);">--</div></div>
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Projected Surplus Waste:</span><div id="simResultWaste" style="font-size:1.1rem; font-weight:700; color:var(--accent-rose);">--</div></div>
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Estimated Spoilage Cost:</span><div id="simResultLoss" style="font-size:1.1rem; font-weight:700; color:var(--accent-rose);">--</div></div>
+                    <div><span style="font-size:0.76rem; color:var(--text-muted);">Projected Sales Revenue:</span><div id="simResultRevenue" style="font-size:1.1rem; font-weight:700; color:var(--primary-light);">--</div></div>
+                </div>
+                <div class="insight-action" style="margin-top: 1rem;">
+                    <strong>Operational Directive:</strong>
+                    <span id="simResultRecommendation">--</span>
+                </div>
+            </div>
+
+            <!-- Smart Human-Readable Insights Section -->
+            <div class="card-header" style="border:none; margin-bottom:0.75rem; padding-left:0;">
+                <h3 style="font-size:1.2rem;"><i class="fa-solid fa-lightbulb text-amber"></i> Human-Readable Smart Actionable Insights</h3>
+            </div>
+            <div class="grid-2" id="smartInsightsContainer" style="gap: 1.25rem;"></div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 6: DWM ANALYSIS (ACADEMIC SHOWCASE — VERY IMPORTANT)
+             ====================================================================== -->
+        <section id="page-dwm-analysis" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Data Warehousing & Data Mining (DWM) Academic Showcase</h2>
+                    <p>Comprehensive pedagogical analysis detailing curriculum concepts, mathematical formulas, and implementation mappings.</p>
+                </div>
+            </div>
+            <div id="dwmAnalysisContainer"></div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 7: REPORTS & EXPORTS
+             ====================================================================== -->
+        <section id="page-reports" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Executive Waste Reduction & Demand Audit Reports</h2>
+                    <p>Structured category scorecards, facility rankings, and downloadable CSV audit sheets.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportWarehouseCSV()"><i class="fa-solid fa-file-arrow-down"></i> Export Warehouse CSV</button>
+                    <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Report</button>
+                </div>
+            </div>
+
+            <!-- Report KPI Summary -->
+            <div class="grid-3" style="margin-bottom: 1.5rem;">
+                <div class="kpi-card"><div class="kpi-title">Total Spoilage Loss (26 Wks)</div><div class="kpi-value" id="reportTotalLoss" style="color:var(--accent-rose);">--</div><div class="kpi-subtitle">Direct cost of discarded food</div></div>
+                <div class="kpi-card"><div class="kpi-title">Target 25% Reduction Savings</div><div class="kpi-value" id="reportTargetSavings" style="color:var(--primary-light);">--</div><div class="kpi-subtitle">Projected ROI from DWM models</div></div>
+                <div class="kpi-card"><div class="kpi-title">Categories Audited</div><div class="kpi-value" id="reportCategoriesAudited" style="color:var(--accent-blue);">--</div><div class="kpi-subtitle">Distinct menu departments</div></div>
+            </div>
+
+            <!-- Category Scorecard Table -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-clipboard-check text-emerald"></i> Category-by-Category Efficiency Scorecard</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th><th>Group</th><th>Sensitivity</th><th>Prepared</th><th>Sold</th><th>Wasted</th><th>Waste %</th><th>Waste Cost</th><th>Revenue</th><th>Efficiency Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportScorecardTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top Waste Centers Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-building text-amber"></i> Top 10 Fulfillment Centers by Waste Cost</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Center ID</th><th>Center Name</th><th>Type</th><th>Op Area</th><th>Wasted Units</th><th>Waste %</th><th>Waste Cost ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportCentersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================
+             PAGE 8: ADMIN & USER MANAGEMENT
+             ====================================================================== -->
+        <section id="page-admin" class="page-section">
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>System Administration & Role-Based Access Control</h2>
+                    <p>Manage users, switch persona roles for grading, and monitor warehouse database integrity.</p>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-users text-blue"></i> Authorized System Users</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th><th>Full Name</th><th>Email</th><th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersTableBody">
+                                <tr><td>#1</td><td>System Administrator</td><td>admin@smartfood.edu</td><td><span class="badge role-Admin">Admin</span></td></tr>
+                                <tr><td>#2</td><td>Senior Demand Analyst</td><td>analyst@smartfood.edu</td><td><span class="badge role-Analyst">Analyst</span></td></tr>
+                                <tr><td>#3</td><td>Guest Evaluator</td><td>viewer@smartfood.edu</td><td><span class="badge role-Viewer">Viewer</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-shield-halved text-rose"></i> Two-Factor Authentication Integration Status</h3>
+                    </div>
+                    <div class="two-factor-banner">
+                        <i class="fa-solid fa-circle-check text-emerald" style="font-size:1.1rem; margin-top:0.15rem;"></i>
+                        <div>
+                            <strong>Active 2-Step OTP Authentication Online:</strong>
+                            <p style="margin-top:0.25rem;">
+                                Two-step authentication is active with secure 6-digit OTP verification, 300-second expiration, and 5-attempt security protection.
+                            </p>
+                            <p style="margin-top:0.35rem; color:#fde68a;">
+                                Powered by <code>two_factor_authentication/totp_service.py</code> with cryptographic HMAC verification and session tokens.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1.25rem;">
+                        <h4 style="font-size:0.86rem; color:var(--text-secondary); margin-bottom:0.5rem;">Quick Role Switch for Evaluation:</h4>
+                        <div class="demo-buttons-grid">
+                            <button class="btn-demo" onclick="demoSwitchRole('Admin')">Admin (admin@smartfood.edu)</button>
+                            <button class="btn-demo" onclick="demoSwitchRole('Analyst')">Analyst (analyst@smartfood.edu)</button>
+                            <button class="btn-demo" onclick="demoSwitchRole('Viewer')">Viewer (viewer@smartfood.edu)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    </div> <!-- End #mainAppContainer -->
+
+    <!-- ==========================================================================
+         AUTHENTICATION LANDING SCREEN (GATES THE SYSTEM BEFORE MAIN APP)
+         ========================================================================== -->
+    <div id="authLandingScreen" class="auth-landing-screen">
+        <div class="auth-landing-card">
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h2>Smart Food & Waste Intelligence</h2>
+                <p>Data Warehousing & Data Mining PBL System</p>
+            </div>
+
+            <!-- Tab Switcher: Sign In vs Register -->
+            <div class="auth-tabs-toggle">
+                <button type="button" id="tabBtnSignIn" class="auth-tab-btn active" onclick="switchAuthTab('signin')">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                </button>
+                <button type="button" id="tabBtnRegister" class="auth-tab-btn" onclick="switchAuthTab('register')">
+                    <i class="fa-solid fa-user-plus"></i> Create Account
+                </button>
+            </div>
+
+            <!-- 1. STEP 1: LOGIN FORM -->
+            <div id="loginFormWrapper">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="admin@smartfood.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                        <i class="fa-solid fa-arrow-right"></i> Continue to 2-Step OTP
+                    </button>
+                </form>
+
+                <div style="margin-top: 1rem; text-align: center;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">Quick Pre-Fill Credentials:</span>
+                    <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:0.35rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="fillDemoCredentials('admin@smartfood.edu', 'admin123')">Admin</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="fillDemoCredentials('analyst@smartfood.edu', 'analyst123')">Analyst</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="font-size:0.72rem; padding:0.25rem 0.5rem;" onclick="fillDemoCredentials('viewer@smartfood.edu', 'viewer123')">Viewer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. STEP 2: TWO-STEP OTP VERIFICATION -->
+            <div id="otpFormWrapper" style="display:none;">
+                <div class="otp-box">
+                    <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.25rem;">
+                        <i class="fa-solid fa-shield-halved text-emerald"></i> Two-Step Verification Required
+                    </div>
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;" id="otpTargetEmailDisplay">
+                        user@smartfood.edu
+                    </div>
+                    <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.4;">
+                        Enter the 6-digit one-time passcode generated for your account. Code expires in 5 minutes (max 5 attempts).
+                    </p>
+
+                    <div id="otpDemoCodeHint" style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); border-radius:var(--radius-sm); padding:0.5rem; font-size:0.8rem; margin:0.75rem 0; color:#fde68a;">
+                        <!-- Demo OTP code will display here for effortless grading -->
+                    </div>
+
+                    <form id="otpVerifyForm">
+                        <input type="text" id="otpCodeInput" class="otp-input" maxlength="6" pattern="[0-9]{6}" placeholder="000000" autocomplete="one-time-code" required>
+                        <button type="submit" id="btnVerifyOtpSubmit" class="btn btn-primary" style="width:100%;">
+                            <i class="fa-solid fa-shield-check"></i> Verify OTP & Enter System
+                        </button>
+                    </form>
+
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="resetAuthForms()" style="margin-top:0.75rem; width:100%;">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Login
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. CREATE USER / REGISTER FORM -->
+            <div id="registerFormWrapper" style="display:none;">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regFullName" class="form-control" placeholder="e.g. Dr. Jane Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="regEmail" class="form-control" placeholder="e.g. janesmith@university.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password (Min. 6 characters)</label>
+                        <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role-Based Access Level</label>
+                        <select id="regRole" class="form-control">
+                            <option value="Viewer">Viewer (Read-only dashboards, insights & reports)</option>
+                            <option value="Analyst" selected>Analyst (Data mgmt, ETL, mining, forecaster)</option>
+                            <option value="Admin">Admin (Full administrative & user control)</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="btnRegisterSubmit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                        <i class="fa-solid fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+            </div>
+
+            <!-- Evaluation Quick-Switch Persona Buttons -->
+            <div class="demo-roles-box">
+                <div class="demo-roles-title">Evaluation Quick-Switch Personas</div>
+                <div class="demo-buttons-grid">
+                    <button type="button" class="btn-demo" onclick="demoSwitchRole('Admin')">Admin</button>
+                    <button type="button" class="btn-demo" onclick="demoSwitchRole('Analyst')">Analyst</button>
+                    <button type="button" class="btn-demo" onclick="demoSwitchRole('Viewer')">Viewer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL: UPLOAD / ADD DATASET
+         ========================================================================== -->
+    <div id="uploadDatasetModal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="btn-icon" style="position:absolute; top:1rem; right:1rem;" onclick="closeUploadDatasetModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; color:var(--text-primary);"><i class="fa-solid fa-file-arrow-up text-emerald"></i> Add / Upload New Dataset</h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                    Upload a CSV or Excel (.xlsx) file to add to the system catalog for analysis and ETL processing.
+                </p>
+            </div>
+
+            <form id="uploadDatasetForm">
+                <div class="form-group">
+                    <label>Dataset Display Name (Optional)</label>
+                    <input type="text" id="datasetNameInput" class="form-control" placeholder="e.g. Q3 Food Waste Logistics Log">
+                </div>
+                <div class="form-group">
+                    <label>Dataset File (CSV or Excel) *</label>
+                    <input type="file" id="datasetFileInput" class="form-control" accept=".csv, .xlsx, .xls" required>
+                    <small style="color:var(--text-muted); font-size:0.75rem; margin-top:0.25rem; display:block;">
+                        Supports UTF-8 CSV and Excel formats. Headers and row counts will be automatically parsed.
+                    </small>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadDatasetModal()">Cancel</button>
+                    <button type="submit" id="btnSubmitUploadDataset" class="btn btn-primary">
+                        <i class="fa-solid fa-upload"></i> Upload Dataset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         ROLE SWITCH MODAL (WHEN LOGGED IN)
+         ========================================================================== -->
+    <div id="authModalOverlay" class="auth-overlay">
+        <div class="auth-modal">
+            <button class="btn-icon" style="position:absolute; top:1rem; right:1rem;" onclick="closeAuthModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h2>Switch Evaluation Persona</h2>
+                <p>Change your active authenticated role to test RBAC permissions</p>
+            </div>
+
+            <div class="demo-roles-box" style="margin-top:0;">
+                <div class="demo-roles-title">Choose Active Role</div>
+                <div class="demo-buttons-grid">
+                    <button class="btn-demo" onclick="demoSwitchRole('Admin')">Admin</button>
+                    <button class="btn-demo" onclick="demoSwitchRole('Analyst')">Analyst</button>
+                    <button class="btn-demo" onclick="demoSwitchRole('Viewer')">Viewer</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.25rem; text-align: center;">
+                <button class="btn btn-secondary btn-sm" onclick="logout(); closeAuthModal();">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out Completely
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL: CONTINUOUS DATA UPLOAD (ADMIN / ANALYST)
+         ========================================================================== -->
+    <div id="continuousUploadModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 560px;">
+            <button class="btn-icon" style="position:absolute; top:1rem; right:1rem;" onclick="closeContinuousUploadModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; color:var(--text-primary);">
+                    <i class="fa-solid fa-cloud-arrow-up text-emerald"></i> Continuous Data Upload
+                </h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                    Upload new datasets whenever new data becomes available (daily, weekly, monthly, etc.).
+                    New records are automatically processed and added to the existing historical data <strong>without deleting previous records</strong>.
+                </p>
+            </div>
+
+            <form id="continuousUploadForm">
+                <div class="form-group">
+                    <label>Dataset Display Name (Optional)</label>
+                    <input type="text" id="continuousNameInput" class="form-control" placeholder="e.g. Week 27 Nationwide Logistics Feed">
+                </div>
+
+                <div class="grid-2" style="gap:0.75rem;">
+                    <div class="form-group">
+                        <label>Ingestion Period Cadence</label>
+                        <select id="continuousCadenceSelect" class="form-control">
+                            <option value="auto" selected>Auto-detect (from data)</option>
+                            <option value="weekly">Weekly Data Feed</option>
+                            <option value="daily">Daily Kitchen Log</option>
+                            <option value="monthly">Monthly Aggregate Feed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dataset File (CSV or Excel) *</label>
+                        <input type="file" id="continuousFileInput" class="form-control" accept=".csv, .xlsx, .xls">
+                    </div>
+                </div>
+
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 0.75rem; margin-top: 0.75rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-bolt"></i> Quick Ingest Evaluation Feeds:
+                    </div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btnSampleWeek27" onclick="loadSampleContinuousFeed('week27')">
+                            <i class="fa-solid fa-plus text-emerald"></i> Ingest Sample Week 27 Log
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btnSampleDaily" onclick="loadSampleContinuousFeed('daily')">
+                            <i class="fa-solid fa-calendar-day text-blue"></i> Ingest Sample Daily Feed
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeContinuousUploadModal()">Cancel</button>
+                    <button type="submit" id="btnSubmitContinuousUpload" class="btn btn-primary">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Process & Append to Warehouse
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/periodic_monitoring.js"></script>
+    <script src="/static/js/data_mgmt.js"></script>
+    <script src="/static/js/mining.js"></script>
+    <script src="/static/js/predictions.js"></script>
+    <script src="/static/js/dwm_analysis.js"></script>
+    <script src="/static/js/reports.js"></script>
+</body>
+</html>

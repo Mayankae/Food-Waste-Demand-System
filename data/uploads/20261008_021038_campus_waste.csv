@@ -1,0 +1,3 @@
+meal_id,meal_name,category,cuisine,waste_rate
+501,Tandoori Roll,Rolls,Indian,0.08
+502,Greek Salad,Salad,Continental,0.12
